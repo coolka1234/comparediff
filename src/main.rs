@@ -7,7 +7,7 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 fn main() {
     let matches = Command::new("file-diff")
         .version("1.0")
-        .author("Your Name <your.email@example.com>")
+        .author("Krzysztof Kulka <krzysztof.kulka1234@gmail.com>")
         .about("Compares two files line by line")
         .arg(Arg::new("file1")
              .help("First file to compare")
