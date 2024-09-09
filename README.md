@@ -1,1 +1,1 @@
-in works, will try ti finish by the ennd pf septemnber
+in works, will try to finish by the end of september
