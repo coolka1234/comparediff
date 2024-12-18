@@ -1,6 +1,6 @@
 use clap::{Arg, Command};
 use std::fs::File;
-use std::io::{self, BufRead, BufReader};
+use std::io::{self, BufRead, BufReader, Write};
 use std::process;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
@@ -19,8 +19,8 @@ fn main() {
              .index(2))
         .get_matches();
 
-    let file1_path = matches.value_of("file1").unwrap();
-    let file2_path = matches.value_of("file2").unwrap();
+    let file1_path = matches.get_one::<String>("file1").unwrap();
+    let file2_path = matches.get_one::<String>("file2").unwrap();
 
     let file1 = File::open(file1_path).unwrap_or_else(|err| {
         eprintln!("Error opening file1: {}", err);
@@ -70,7 +70,7 @@ fn print_colored_line(stdout: &mut StandardStream, line: &str, color: Color) {
     let mut color_spec = ColorSpec::new();
     color_spec.set_fg(Some(color));
     stdout.set_color(&color_spec).unwrap();
-    writeln!(stdout, "{}", line).unwrap();
+    write!(stdout, "{}\n", line).unwrap();
     stdout.reset().unwrap();
 }
 
