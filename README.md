@@ -1,1 +1,2 @@
-In works, will try to finish by the end of october.
+Wokrs now.
+Usage: compdiff <file1> <file2>
