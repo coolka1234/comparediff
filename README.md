@@ -1,2 +1,2 @@
-Wokrs now.
-Usage: compdiff <file1> <file2>
+Wokrs now.\
+# Usage: compdiff file1 file2
