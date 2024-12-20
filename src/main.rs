@@ -105,6 +105,7 @@ fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S) {
                             print_colored_line(&mut stdout, &line2[i..i+1], Color::Green);
                         }
                     }
+                    println!();
                 }
             }
             (Some(Ok(line1)), None) => {
