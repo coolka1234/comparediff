@@ -9,14 +9,18 @@ fn main() {
         .version("0.9")
         .author("Krzysztof Kulka <krzysztof.kulka1234@gmail.com>")
         .about("Compares two files line by line")
-        .arg(Arg::new("file1")
-             .help("First file to compare")
-             .required(true)
-             .index(1))
-        .arg(Arg::new("file2")
-             .help("Second file to compare")
-             .required(true)
-             .index(2))
+        .arg(
+            Arg::new("file1")
+                .help("First file to compare")
+                .required(true)
+                .index(1),
+        )
+        .arg(
+            Arg::new("file2")
+                .help("Second file to compare")
+                .required(true)
+                .index(2),
+        )
         .get_matches();
 
     let file1_path = matches.get_one::<String>("file1").unwrap();
@@ -49,36 +53,22 @@ fn find_differences(s1: &str, s2: &str) -> Vec<(usize, char, char)> {
     }
 
     if s1.len() > len {
-        differences.extend(s1[len..].chars().enumerate().map(|(i, c)| (len + i, c, ' ')));
+        differences.extend(
+            s1[len..]
+                .chars()
+                .enumerate()
+                .map(|(i, c)| (len + i, c, ' ')),
+        );
     } else if s2.len() > len {
-        differences.extend(s2[len..].chars().enumerate().map(|(i, c)| (len + i, ' ', c)));
+        differences.extend(
+            s2[len..]
+                .chars()
+                .enumerate()
+                .map(|(i, c)| (len + i, ' ', c)),
+        );
     }
 
     differences
-}
-fn print_differences(s1: &str, s2: &str) {
-    let mut result = String::new();
-    let len = s1.len().min(s2.len());
-
-    for (i, (c1, c2)) in s1.chars().zip(s2.chars()).enumerate() {
-        if c1 != c2 {
-            result.push_str(&format!("Difference at {}: '{}' -> '{}'\n", i, c1, c2));
-        }
-    }
-
-    if s1.len() > len {
-        result.push_str(&format!(
-            "Extra in first string: {}\n",
-            &s1[len..]
-        ));
-    } else if s2.len() > len {
-        result.push_str(&format!(
-            "Extra in second string: {}\n",
-            &s2[len..]
-        ));
-    }
-
-    println!("{}", result);
 }
 
 fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S) {
@@ -92,17 +82,23 @@ fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S) {
             (Some(Ok(line1)), Some(Ok(line2))) => {
                 if line1 != line2 {
                     write!(stdout, "{:4}: ", line_number).unwrap();
+                    print!("File 1 line:");
                     print_colored_line(&mut stdout, &line1, Color::Blue);
+                    print!("File 2 line:");
                     print_colored_line(&mut stdout, &line2, Color::Blue);
-                    let diffs= find_differences(&line1, &line2);
+                    let diffs = find_differences(&line1, &line2);
                     for (i, c1, c2) in diffs {
                         if c1 == ' ' {
-                            print_colored_line(&mut stdout, &line1[i..i+1], Color::Red);
+                            write!(stdout, "-").unwrap();
+                            print_colored_line(&mut stdout, &line2[i..i + 1], Color::Green);
                         } else if c2 == ' ' {
-                            print_colored_line(&mut stdout, &line2[i..i+1], Color::Green);
+                            write!(stdout, "+").unwrap();
+                            print_colored_line(&mut stdout, &line1[i..i + 1], Color::Red);
                         } else {
-                            print_colored_line(&mut stdout, &line1[i..i+1], Color::Red);
-                            print_colored_line(&mut stdout, &line2[i..i+1], Color::Green);
+                            write!(stdout, "-").unwrap();
+                            print_colored_line(&mut stdout, &line1[i..i + 1], Color::Red);
+                            write!(stdout, "+").unwrap();
+                            print_colored_line(&mut stdout, &line2[i..i + 1], Color::Green);
                         }
                     }
                     println!();
@@ -117,7 +113,7 @@ fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S) {
             (None, None) => break,
             (Some(Err(e)), _) | (_, Some(Err(e))) => {
                 eprintln!("Error reading line: {}", e);
-                process::exit(1);
+                // process::exit(1);
             }
         }
         line_number += 1;
@@ -131,6 +127,3 @@ fn print_colored_line(stdout: &mut StandardStream, line: &str, color: Color) {
     write!(stdout, "{} ", line).unwrap();
     stdout.reset().unwrap();
 }
-
-
-
