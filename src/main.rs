@@ -38,6 +38,25 @@ fn main() {
     compare_files(reader1, reader2);
 }
 
+fn find_differences(s1: &str, s2: &str) -> Vec<(usize, char, char)> {
+    let mut differences = Vec::new();
+    let len = s1.len().min(s2.len());
+
+    for (i, (c1, c2)) in s1.chars().zip(s2.chars()).enumerate() {
+        if c1 != c2 {
+            differences.push((i, c1, c2));
+        }
+    }
+
+    if s1.len() > len {
+        differences.extend(s1[len..].chars().enumerate().map(|(i, c)| (len + i, c, ' ')));
+    } else if s2.len() > len {
+        differences.extend(s2[len..].chars().enumerate().map(|(i, c)| (len + i, ' ', c)));
+    }
+
+    differences
+}
+
 fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S) {
     let mut stdout = StandardStream::stdout(ColorChoice::Auto);
     let mut lines1 = reader1.lines();
