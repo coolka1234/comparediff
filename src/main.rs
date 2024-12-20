@@ -6,7 +6,7 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn main() {
     let matches = Command::new("file-diff")
-        .version("1.0")
+        .version("0.9")
         .author("Krzysztof Kulka <krzysztof.kulka1234@gmail.com>")
         .about("Compares two files line by line")
         .arg(Arg::new("file1")
@@ -56,6 +56,30 @@ fn find_differences(s1: &str, s2: &str) -> Vec<(usize, char, char)> {
 
     differences
 }
+fn print_differences(s1: &str, s2: &str) {
+    let mut result = String::new();
+    let len = s1.len().min(s2.len());
+
+    for (i, (c1, c2)) in s1.chars().zip(s2.chars()).enumerate() {
+        if c1 != c2 {
+            result.push_str(&format!("Difference at {}: '{}' -> '{}'\n", i, c1, c2));
+        }
+    }
+
+    if s1.len() > len {
+        result.push_str(&format!(
+            "Extra in first string: {}\n",
+            &s1[len..]
+        ));
+    } else if s2.len() > len {
+        result.push_str(&format!(
+            "Extra in second string: {}\n",
+            &s2[len..]
+        ));
+    }
+
+    println!("{}", result);
+}
 
 fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S) {
     let mut stdout = StandardStream::stdout(ColorChoice::Auto);
@@ -70,6 +94,17 @@ fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S) {
                     write!(stdout, "{:4}: ", line_number).unwrap();
                     print_colored_line(&mut stdout, &line1, Color::Blue);
                     print_colored_line(&mut stdout, &line2, Color::Blue);
+                    let diffs= find_differences(&line1, &line2);
+                    for (i, c1, c2) in diffs {
+                        if c1 == ' ' {
+                            print_colored_line(&mut stdout, &line1[i..i+1], Color::Red);
+                        } else if c2 == ' ' {
+                            print_colored_line(&mut stdout, &line2[i..i+1], Color::Green);
+                        } else {
+                            print_colored_line(&mut stdout, &line1[i..i+1], Color::Red);
+                            print_colored_line(&mut stdout, &line2[i..i+1], Color::Green);
+                        }
+                    }
                 }
             }
             (Some(Ok(line1)), None) => {
