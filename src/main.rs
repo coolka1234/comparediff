@@ -21,6 +21,12 @@ fn main() {
                 .required(true)
                 .index(2),
         )
+        .arg(
+            Arg::new("git-style")
+                .help("Print out diffrence git style")
+                .required(false)
+                .index(3)
+        )
         .get_matches();
 
     let file1_path = matches.get_one::<String>("file1").unwrap();
