@@ -31,6 +31,7 @@ fn main() {
 
     let file1_path = matches.get_one::<String>("file1").unwrap();
     let file2_path = matches.get_one::<String>("file2").unwrap();
+    let git_style = matches.get_one::<bool>("git-style");
 
     let file1 = File::open(file1_path).unwrap_or_else(|err| {
         eprintln!("Error opening file1: {}", err);
@@ -45,7 +46,7 @@ fn main() {
     let reader1 = BufReader::new(file1);
     let reader2 = BufReader::new(file2);
 
-    compare_files(reader1, reader2);
+    compare_files(reader1, reader2, git_style.unwrap_or(&false));
 }
 
 fn find_differences(s1: &str, s2: &str) -> Vec<(usize, char, char)> {
@@ -77,7 +78,7 @@ fn find_differences(s1: &str, s2: &str) -> Vec<(usize, char, char)> {
     differences
 }
 
-fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S) {
+fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S, git_style: &bool) {
     let mut stdout = StandardStream::stdout(ColorChoice::Auto);
     let mut lines1 = reader1.lines();
     let mut lines2 = reader2.lines();
