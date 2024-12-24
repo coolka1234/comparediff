@@ -93,22 +93,24 @@ fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S, git_style: &boo
                     print_colored_line(&mut stdout, &line1, Color::Blue);
                     print!("File 2 line:");
                     print_colored_line(&mut stdout, &line2, Color::Blue);
-                    let diffs = find_differences(&line1, &line2);
-                    for (i, c1, c2) in diffs {
-                        if c1 == ' ' {
-                            write!(stdout, "-").unwrap();
-                            print_colored_line(&mut stdout, &line2[i..i + 1], Color::Green);
-                        } else if c2 == ' ' {
-                            write!(stdout, "+").unwrap();
-                            print_colored_line(&mut stdout, &line1[i..i + 1], Color::Red);
-                        } else {
-                            write!(stdout, "-").unwrap();
-                            print_colored_line(&mut stdout, &line1[i..i + 1], Color::Red);
-                            write!(stdout, "+").unwrap();
-                            print_colored_line(&mut stdout, &line2[i..i + 1], Color::Green);
+                    if *git_style { 
+                        let diffs = find_differences(&line1, &line2);
+                        for (i, c1, c2) in diffs {
+                            if c1 == ' ' {
+                                write!(stdout, "-").unwrap();
+                                print_colored_line(&mut stdout, &line2[i..i + 1], Color::Green);
+                            } else if c2 == ' ' {
+                                write!(stdout, "+").unwrap();
+                                print_colored_line(&mut stdout, &line1[i..i + 1], Color::Red);
+                            } else {
+                                write!(stdout, "-").unwrap();
+                                print_colored_line(&mut stdout, &line1[i..i + 1], Color::Red);
+                                write!(stdout, "+").unwrap();
+                                print_colored_line(&mut stdout, &line2[i..i + 1], Color::Green);
+                            }
                         }
+                        println!();
                     }
-                    println!();
                 }
             }
             (Some(Ok(line1)), None) => {
