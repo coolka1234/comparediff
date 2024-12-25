@@ -25,9 +25,8 @@ fn main() {
             Arg::new("git-style")
                 .help("Print out diffrence git style")
                 .required(false)
-                .index(3)
-                .num_args(0)
                 .long("git-style")
+                .action(clap::ArgAction::SetFalse),
         )
         .get_matches();
 
@@ -48,7 +47,7 @@ fn main() {
     let reader1 = BufReader::new(file1);
     let reader2 = BufReader::new(file2);
 
-    compare_files(reader1, reader2, git_style.unwrap_or(&false));
+    compare_files(reader1, reader2, git_style);
 }
 
 fn find_differences(s1: &str, s2: &str) -> Vec<(usize, char, char)> {
@@ -80,7 +79,7 @@ fn find_differences(s1: &str, s2: &str) -> Vec<(usize, char, char)> {
     differences
 }
 
-fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S, git_style: &bool) {
+fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S, git_style: bool) {
     let mut stdout = StandardStream::stdout(ColorChoice::Auto);
     let mut lines1 = reader1.lines();
     let mut lines2 = reader2.lines();
@@ -95,7 +94,7 @@ fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S, git_style: &boo
                     print_colored_line(&mut stdout, &line1, Color::Blue);
                     print!("File 2 line:");
                     print_colored_line(&mut stdout, &line2, Color::Blue);
-                    if *git_style { 
+                    if git_style { 
                         let diffs = find_differences(&line1, &line2);
                         for (i, c1, c2) in diffs {
                             if c1 == ' ' {
