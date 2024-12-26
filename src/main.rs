@@ -26,13 +26,13 @@ fn main() {
                 .help("Print out diffrence git style")
                 .required(false)
                 .long("git-style")
-                .action(clap::ArgAction::SetFalse),
+                .action(clap::ArgAction::SetTrue),
         )
         .get_matches();
 
     let file1_path = matches.get_one::<String>("file1").unwrap();
     let file2_path = matches.get_one::<String>("file2").unwrap();
-    let git_style = matches.contains_id("git-style");
+    let git_style = matches.get_flag("git-style");
 
     let file1 = File::open(file1_path).unwrap_or_else(|err| {
         eprintln!("Error opening file1: {}", err);
