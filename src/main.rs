@@ -28,11 +28,26 @@ fn main() {
                 .long("git-style")
                 .action(clap::ArgAction::SetTrue),
         )
+        .arg(
+            Arg::new("color")
+                .help("Print out diffrence with color")
+                .required(false)
+                .long("color")
+                .action(clap::ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("unified")
+                .help("Print out diffrence in unified format")
+                .required(false)
+                .long("unified")
+                .action(clap::ArgAction::SetTrue),
+        )
         .get_matches();
 
     let file1_path = matches.get_one::<String>("file1").unwrap();
     let file2_path = matches.get_one::<String>("file2").unwrap();
     let git_style = matches.get_flag("git-style");
+    let group_diff = matches.get_flag("unified");
 
     let file1 = File::open(file1_path).unwrap_or_else(|err| {
         eprintln!("Error opening file1: {}", err);
@@ -47,7 +62,7 @@ fn main() {
     let reader1 = BufReader::new(file1);
     let reader2 = BufReader::new(file2);
 
-    compare_files(reader1, reader2, git_style);
+    compare_files(reader1, reader2, git_style, group_diff);
 }
 
 fn find_differences(s1: &str, s2: &str) -> Vec<(usize, char, char)> {
@@ -79,7 +94,34 @@ fn find_differences(s1: &str, s2: &str) -> Vec<(usize, char, char)> {
     differences
 }
 
-fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S, git_style: bool) {
+fn group_diffrences(s1: &str, s2: &str) -> Vec<(usize, usize)> {
+    let mut groups = Vec::new();
+    let mut start = 0;
+    let mut end = 0;
+
+    for (i, (c1, c2)) in s1.chars().zip(s2.chars()).enumerate() {
+        if c1 != c2 {
+            if start == 0 {
+                start = i;
+            }
+            end = i;
+        } else {
+            if start != 0 {
+                groups.push((start, end));
+                start = 0;
+                end = 0;
+            }
+        }
+    }
+
+    if start != 0 {
+        groups.push((start, end));
+    }
+
+    groups
+}
+
+fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S, git_style: bool, group_diff: bool) {
     let mut stdout = StandardStream::stdout(ColorChoice::Auto);
     let mut lines1 = reader1.lines();
     let mut lines2 = reader2.lines();
@@ -110,8 +152,17 @@ fn compare_files<R: BufRead, S: BufRead>(reader1: R, reader2: S, git_style: bool
                                 print_colored_line(&mut stdout, &line2[i..i + 1], Color::Green);
                             }
                         }
-                        println!();
                     }
+                    if group_diff {
+                        let diffs = group_diffrences(&line1, &line2);
+                        for (start, end) in diffs {
+                            write!(stdout, "File 1: ").unwrap();
+                            print_colored_line(&mut stdout, &line1[start..end + 1], Color::Red);
+                            write!(stdout, "File 2: ").unwrap();
+                            print_colored_line(&mut stdout, &line2[start..end + 1], Color::Green);
+                        }
+                    }
+                    println!();
                 }
             }
             (Some(Ok(line1)), None) => {
